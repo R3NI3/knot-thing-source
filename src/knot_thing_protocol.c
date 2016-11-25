@@ -119,14 +119,14 @@ static int read_register(void)
 	if (nbytes > 0) {
 		if (crdntl.result != KNOT_SUCCESS)
 			return -1;
+		printf("UUID: %s TOKEN: %s\n",crdntl.uuid, crdntl.token);
+		// hal_storage_write(KNOT_UUID_ADDR, crdntl.uuid,
+		// 				KNOT_PROTOCOL_UUID_LEN);
+		// hal_storage_write(KNOT_TOKEN_ADDR, crdntl.token,
+		// 				KNOT_PROTOCOL_TOKEN_LEN);
 
-		hal_storage_write(KNOT_UUID_ADDR, crdntl.uuid,
-						KNOT_PROTOCOL_UUID_LEN);
-		hal_storage_write(KNOT_TOKEN_ADDR, crdntl.token,
-						KNOT_PROTOCOL_TOKEN_LEN);
-
-		hal_storage_write(KNOT_UUID_FLAG_ADDR, buffer, KNOT_UUID_FLAG_LEN);
-		hal_storage_write(KNOT_TOKEN_FLAG_ADDR, buffer, KNOT_TOKEN_FLAG_LEN);
+		// hal_storage_write(KNOT_UUID_FLAG_ADDR, buffer, KNOT_UUID_FLAG_LEN);
+		// hal_storage_write(KNOT_TOKEN_FLAG_ADDR, buffer, KNOT_TOKEN_FLAG_LEN);
 	} else if (nbytes < 0)
 		return nbytes;
 
@@ -333,32 +333,32 @@ int knot_thing_protocol_run(void)
 		 * uuid/token flags indicate wheter they are
 		 * stored in EEPROM or not
 		 */
-		hal_storage_read(KNOT_UUID_FLAG_ADDR, &uuid_flag,
-						KNOT_UUID_FLAG_LEN);
-		hal_storage_read(KNOT_TOKEN_FLAG_ADDR, &token_flag,
-						KNOT_TOKEN_FLAG_LEN);
-		/*
-		 * If flag was found then we read the addresses and send
-		 * the auth request, otherwise register request
-		 */
-		if(uuid_flag && token_flag) {
-			hal_storage_read(KNOT_UUID_ADDR, uuid,
-						KNOT_PROTOCOL_UUID_LEN);
-			hal_storage_read(KNOT_TOKEN_ADDR, token,
-					KNOT_PROTOCOL_TOKEN_LEN);
+		// hal_storage_read(KNOT_UUID_FLAG_ADDR, &uuid_flag,
+		// 				KNOT_UUID_FLAG_LEN);
+		// hal_storage_read(KNOT_TOKEN_FLAG_ADDR, &token_flag,
+		// 				KNOT_TOKEN_FLAG_LEN);
+		// /*
+		//  * If flag was found then we read the addresses and send
+		//  * the auth request, otherwise register request
+		//  */
+		// if(uuid_flag && token_flag) {
+		// 	hal_storage_read(KNOT_UUID_ADDR, uuid,
+		// 				KNOT_PROTOCOL_UUID_LEN);
+		// 	hal_storage_read(KNOT_TOKEN_ADDR, token,
+		// 			KNOT_PROTOCOL_TOKEN_LEN);
 
-			state = STATE_AUTHENTICATING;
-			if (send_auth() < 0) {
-				previous_state = state;
-				state = STATE_ERROR;
-			}
-		} else {
+		// 	state = STATE_AUTHENTICATING;
+		// 	if (send_auth() < 0) {
+		// 		previous_state = state;
+		// 		state = STATE_ERROR;
+		// 	}
+		// } else {
 			state = STATE_REGISTERING;
 			if (send_register() < 0) {
 				previous_state = state;
 				state = STATE_ERROR;
 			}
-		}
+		//}
 		break;
 	/*
 	 * Authenticating, Resgistering cases waits (without blocking)
@@ -438,6 +438,7 @@ int knot_thing_protocol_run(void)
 
 	case STATE_ONLINE:
 		/* FIXME: Open socket first */
+		printf("State Online\n");
 		ilen = hal_comm_read(cli_sock, &kreq, sizeof(kreq));
 		if (ilen > 0) {
 			/* There is config or set data */
@@ -463,9 +464,9 @@ int knot_thing_protocol_run(void)
 			}
 		}
 		/* If some event ocurred send msg_data */
-		if (eventf(&msg_data) == 0)
-			if (send_data(&msg_data) < 0)
-				state = STATE_ERROR;
+		// if (eventf(&msg_data) == 0)
+		// 	if (send_data(&msg_data) < 0)
+		// 		state = STATE_ERROR;
 
 	break;
 
@@ -475,16 +476,22 @@ int knot_thing_protocol_run(void)
 		//TODO: wait 1s
 		switch (previous_state) {
 		case STATE_CONNECTING:
+			printf("CONNECTIng\n");
 			break;
 		case STATE_AUTHENTICATING:
+			printf("Authenticating\n");
 			break;
 		case STATE_REGISTERING:
+			printf("Resgistering\n");
 			break;
 		case STATE_SCHEMA:
+			printf("schema\n");
 			break;
 		case STATE_SCHEMA_RESP:
+			printf("resp\n");
 			break;
 		case STATE_ONLINE:
+			printf("Online\n");
 			break;
 		}
 		state = STATE_DISCONNECTED;
