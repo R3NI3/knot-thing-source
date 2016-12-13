@@ -308,6 +308,7 @@ int knot_thing_protocol_run(void)
 	knot_msg kreq;
 	knot_msg_data msg_data;
 	struct nrf24_mac addr;
+	static uint64_t addr2 = 0x0000000098AF6432;
 
 	memset(&msg_data, 0, sizeof(msg_data));
 
@@ -332,7 +333,8 @@ int knot_thing_protocol_run(void)
 		 * Try to accept GW connection request. EAGAIN means keep
 		 * waiting, less then 0 means error and greater then 0 success
 		 */
-		cli_sock = hal_comm_accept(sock, &(addr.address.uint64));
+		//cli_sock = hal_comm_accept(sock, &(addr.address.uint64));
+		cli_sock = hal_comm_accept(sock, &(addr2));
 		if (cli_sock == -EAGAIN)
 			break;
 		else if (cli_sock < 0) {
