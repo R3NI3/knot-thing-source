@@ -87,9 +87,6 @@ int knot_thing_protocol_init(const char *thing_name, data_function read,
 
 	hal_gpio_pin_mode(CLEAR_EEPROM_PIN, INPUT_PULLUP);
 
-	/* Set mac address */
-	set_nrf24MAC();
-
 	if (hal_comm_init("NRF0") < 0)
 		return -1;
 
@@ -367,6 +364,10 @@ int knot_thing_protocol_run(void)
 	/* Network message handling state machine */
 	switch (state) {
 	case STATE_DISCONNECTED:
+		/* Set the Mac address if needed*/
+		hal_storage_read_end(HAL_STORAGE_ID_MAC, &addr, sizeof(struct nrf24_mac));
+		if(addr.address.uint64 == 0)
+			set_nrf24MAC();
 		/* Internally listen starts broadcasting presence*/
 		if (hal_comm_listen(sock) < 0)
 			state = STATE_ERROR;
